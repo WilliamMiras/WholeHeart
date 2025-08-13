@@ -35,24 +35,24 @@ def train(start_epoch=0):
         torch.nn.functional.normalize(mean=[0.485, 0.456, 0.406],
                                       std=[0.229, 0.224, 0.225])  # ImageNet stats
     )
-    train_dataset = EchoNetDataset(root_dir="./echonet_data/", split="train",
+    train_dataset = EchoNetDataset(root_dir="home/ubuntu/echonet_data", split="TRAIN",
                                    transform=transform)
-    train_loader = DataLoader(train_dataset, batch_size=2, shuffle=True,
+    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True,
                               num_workers=2, collate_fn=collate_fn, pin_memory=True)
 
     # Optimizer and mixed precision setup
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.01)
     scaler = GradScaler()  # For FP16 training
-    accumulation_steps = 4  # Effective batch size = 2 * 4 = 8
+    accumulation_steps = 2  # Effective batch size = 2 * 8 = 16
 
-    # Training loop: 50 epochs
-    num_epochs = 50
+    # Training loop: 30 epochs
+    num_epochs = 30
     for epoch in range(start_epoch, num_epochs):
         model.train()  # Set model to training mode
         optimizer.zero_grad()  # Clear gradients
         running_loss = 0.0
 
-        # Iterate over batches (~5,000 per epoch with batch_size=2)
+        # Iterate over batches (~5,000 per epoch with batch_size=8)
         for i, (frames, efs, masks) in enumerate(train_loader):
             frames, efs, masks = frames.to(device), efs.to(device), masks.to(device)
 
